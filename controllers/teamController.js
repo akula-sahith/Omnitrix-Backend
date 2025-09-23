@@ -17,6 +17,17 @@ export const registerTeam = async (req, res) => {
   try {
     const { teamLeaderName, teamName, phoneNumber, email, college, teamSize, yearOfStudy } = req.body;
 
+    // 🔎 Check if team already registered with this email
+    const existingTeam = await Team.findOne({ email });
+    if (existingTeam) {
+      return res.status(400).json({
+        success: false,
+        message: `A team is already registered with email: ${email}`,
+        teamId: existingTeam.teamId
+      });
+    }
+
+    // Generate unique teamId
     const teamId = await generateTeamId();
 
     const newTeam = new Team({
@@ -34,9 +45,13 @@ export const registerTeam = async (req, res) => {
 
     await sendConfirmationEmail(newTeam);
 
-    res.status(200).json({ success: true, teamId, message: "Team registered successfully!" });
+    res.status(200).json({
+      success: true,
+      teamId,
+      message: "Team registered successfully!"
+    });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in registerTeam:", err);
     res.status(500).json({ success: false, error: "Registration failed" });
   }
 };
