@@ -12,11 +12,8 @@ export const sendConfirmationEmail = async (team) => {
     console.log("Called");
   try {
     const msg = {
-      to: team.email, // Team leader's email
-      from: {
-        email: 'akulasahith268@gmail.com', // Verified sender in SendGrid
-        name: 'Omnitrix Hackathon',           // Display name
-      },
+      to: team.email, // Team leader's email       // recipient
+      from: 'akulasahith268@gmail.com', 
       subject: 'Team Registration Confirmation',
       html: `
         <h2>Hi ${team.teamLeaderName},</h2>
