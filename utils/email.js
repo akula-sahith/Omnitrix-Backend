@@ -1,13 +1,12 @@
 // utils/email.js
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
 
-// List of SendGrid accounts (API keys + from emails)
-const sendGridAccounts = [
-  { apiKey: process.env.SENDGRID_API_KEY_1, from: process.env.EMAIL_FROM_1 },
-  { apiKey: process.env.SENDGRID_API_KEY_2, from: process.env.EMAIL_FROM_2 },
-  // add more accounts if needed
+// List of Gmail accounts (email + app password)
+const gmailAccounts = [
+  { user: process.env.EMAIL_USER, pass: process.env.EMAIL_APP_PASS },
+  // { user: process.env.EMAIL_USER_2, pass: process.env.EMAIL_PASS_2 }, // optional backup
 ];
 
 export async function sendConfirmationEmail(team) {
@@ -23,20 +22,29 @@ Team Leader: ${team.teamLeaderName}
 Good luck! 🚀
 `;
 
-  for (let account of sendGridAccounts) {
+  for (let account of gmailAccounts) {
     try {
-      sgMail.setApiKey(account.apiKey);
-      await sgMail.send({
+      // create transporter
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: account.user,
+          pass: account.pass, // App Password
+        },
+      });
+
+      await transporter.sendMail({
+        from: account.user,
         to: team.email,
-        from: account.from,
         subject: "OMNITRIX Hackathon Registration Confirmation",
         text: bodyText,
       });
-      console.log("✅ Confirmation email sent to", team.email, "via", account.from);
-      return; // success, exit the function
+
+      console.log(`✅ Confirmation email sent to ${team.email} via ${account.user}`);
+      return; // success → stop trying
     } catch (err) {
       console.error(
-        `❌ Error sending email via ${account.from}, trying next account...`,
+        `❌ Error sending email via ${account.user}, trying next account...`,
         err.message
       );
     }

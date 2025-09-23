@@ -33,7 +33,7 @@ export const registerTeam = async (req, res) => {
 
     await newTeam.save();
 
-    await appendToSheet(newTeam);
+    // await appendToSheet(newTeam);
     await sendConfirmationEmail(newTeam);
 
     res.status(200).json({ success: true, teamId, message: "Team registered successfully!" });
