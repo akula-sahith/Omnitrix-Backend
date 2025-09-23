@@ -17,5 +17,9 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use("/api/team", teamRoutes);
 
+app.get("/api", (req, res) => {
+  res.send({ message: "API is working 🚀" });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
