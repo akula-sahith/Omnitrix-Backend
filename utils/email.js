@@ -9,6 +9,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
  * @param {Object} team - Team object containing details like teamLeaderName, email, teamId
  */
 export const sendConfirmationEmail = async (team) => {
+    console.log("Called");
   try {
     const msg = {
       to: team.email, // Team leader's email
