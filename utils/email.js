@@ -1,54 +1,37 @@
-// utils/email.js
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import sgMail from '@sendgrid/mail';
+import dotenv from 'dotenv';
 dotenv.config();
 
-// List of Gmail accounts (email + app password)
-const gmailAccounts = [
-  { user: process.env.EMAIL_USER, pass: process.env.EMAIL_APP_PASS },
-  // { user: process.env.EMAIL_USER_2, pass: process.env.EMAIL_PASS_2 }, // optional backup
-];
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-export async function sendConfirmationEmail(team) {
-  const bodyText = `
-Hi ${team.teamLeaderName},
+/**
+ * Sends a confirmation email to a registered team.
+ * @param {Object} team - Team object containing details like teamLeaderName, email, teamId
+ */
+export const sendConfirmationEmail = async (team) => {
+  try {
+    const msg = {
+      to: team.email, // Team leader's email
+      from: {
+        email: 'akulasahith268@gmail.com', // Verified sender in SendGrid
+        name: 'Omnitrix Hackathon',           // Display name
+      },
+      subject: 'Team Registration Confirmation',
+      html: `
+        <h2>Hi ${team.teamLeaderName},</h2>
+        <p>Congratulations! Your team <strong>${team.teamName}</strong> has been successfully registered for the Omnitrix Hackathon.</p>
+        <p><strong>Team ID:</strong> ${team.teamId}</p>
+        <p>Team Size: ${team.teamSize}</p>
+        <p>College: ${team.college}</p>
+        <p>We look forward to seeing you at the event 🚀</p>
+        <br/>
+        <p>— Omnitrix Hackathon Team</p>
+      `,
+    };
 
-Thank you for registering for OMNITRIX Hackathon! 🎉
-
-Your Team ID: ${team.teamId}
-Team Name: ${team.teamName}
-Team Leader: ${team.teamLeaderName}
-
-Good luck! 🚀
-`;
-
-  for (let account of gmailAccounts) {
-    try {
-      // create transporter
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: account.user,
-          pass: account.pass, // App Password
-        },
-      });
-
-      await transporter.sendMail({
-        from: account.user,
-        to: team.email,
-        subject: "OMNITRIX Hackathon Registration Confirmation",
-        text: bodyText,
-      });
-
-      console.log(`✅ Confirmation email sent to ${team.email} via ${account.user}`);
-      return; // success → stop trying
-    } catch (err) {
-      console.error(
-        `❌ Error sending email via ${account.user}, trying next account...`,
-        err.message
-      );
-    }
+    await sgMail.send(msg);
+    console.log(`✅ Confirmation email sent to ${team.email}`);
+  } catch (err) {
+    console.error('❌ Error sending confirmation email:', err);
   }
-
-  console.error("❌ All email accounts failed for", team.email);
-}
+};

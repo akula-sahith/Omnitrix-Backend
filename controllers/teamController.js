@@ -1,6 +1,5 @@
 import Team from "../models/Team.js";
 import Counter from "../models/Counter.js";
-import { appendToSheet } from "../utils/sheets.js";
 import { sendConfirmationEmail } from "../utils/email.js";
 
 // Generate team ID using Counter
@@ -33,8 +32,7 @@ export const registerTeam = async (req, res) => {
 
     await newTeam.save();
 
-    // await appendToSheet(newTeam);
-    // await sendConfirmationEmail(newTeam);
+    await sendConfirmationEmail(newTeam);
 
     res.status(200).json({ success: true, teamId, message: "Team registered successfully!" });
   } catch (err) {
