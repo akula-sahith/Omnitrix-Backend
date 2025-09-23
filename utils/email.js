@@ -19,14 +19,19 @@ export const sendConfirmationEmail = async (team) => {
       },
       subject: 'Team Registration Confirmation',
       html: `
-        <h2>Hi ${team.teamLeaderName},</h2>
-        <p>Congratulations! Your team <strong>${team.teamName}</strong> has been successfully registered for the Omnitrix Hackathon.</p>
-        <p><strong>Team ID:</strong> ${team.teamId}</p>
-        <p>Team Size: ${team.teamSize}</p>
-        <p>College: ${team.college}</p>
-        <p>We look forward to seeing you at the event 🚀</p>
-        <br/>
-        <p>— Omnitrix Hackathon Team</p>
+      <h2>Hey ${team.teamLeaderName},</h2>
+
+<p>Your team <strong>${team.teamName}</strong> has unlocked access to the <em>Omnitrix</em> 🔥</p>
+
+<p><strong>Team ID:</strong> ${team.teamId}</p>
+<p><strong>Team Size:</strong> ${team.teamSize}</p>
+<p><strong>College:</strong> ${team.college}</p>
+
+<p>Get ready to transform your ideas into reality 💡⚡.  
+Problem statements will be revealed soon — and your coding superpowers will be put to the test!</p>
+
+<br/>
+<p>— Team Omnitrix 🚀</p>
       `,
     };
 
