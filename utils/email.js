@@ -13,7 +13,10 @@ export const sendConfirmationEmail = async (team) => {
   try {
     const msg = {
       to: team.email, // Team leader's email       // recipient
-      from: 'akulasahith268@gmail.com', 
+      from: {
+        email: 'akulasahith268@gmail.com', // Verified sender in SendGrid
+        name: 'Omnitrix Hackathon',           // Display name
+      },
       subject: 'Team Registration Confirmation',
       html: `
         <h2>Hi ${team.teamLeaderName},</h2>
