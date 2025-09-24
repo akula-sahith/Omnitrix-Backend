@@ -15,7 +15,17 @@ async function generateTeamId() {
 
 export const registerTeam = async (req, res) => {
   try {
-    const { teamLeaderName, teamName, phoneNumber, email, college, teamSize, yearOfStudy } = req.body;
+    const { 
+      teamLeaderName, 
+      teamName, 
+      phoneNumber, 
+      email, 
+      college, 
+      teamSize, 
+      yearOfStudy, 
+      teammate1,   // ✅ new field
+      teammate2    // ✅ new field
+    } = req.body;
 
     // 🔎 Check if team already registered with this email
     const existingTeam = await Team.findOne({ email });
@@ -38,7 +48,9 @@ export const registerTeam = async (req, res) => {
       email,
       college,
       teamSize,
-      yearOfStudy
+      yearOfStudy,
+      teammate1,   // ✅ save to DB
+      teammate2    // ✅ save to DB
     });
 
     await newTeam.save();
