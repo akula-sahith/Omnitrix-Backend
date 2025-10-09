@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const responseSchema = new mongoose.Schema({
   questionId: { type: String, required: true },
-  selectedOption: { type: String, required: true },
+  selectedOption: { type: String, required: false },
 });
 
 const quizSchema = new mongoose.Schema({
