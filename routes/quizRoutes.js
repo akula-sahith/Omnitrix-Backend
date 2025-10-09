@@ -50,13 +50,23 @@ router.post("/submit", async (req, res) => {
 
   try {
     const quiz = await Quiz.findOne({ teamId });
-    if (!quiz) return res.status(404).json({ success: false, message: "Quiz not found" });
-    if (quiz.isSubmitted) return res.status(400).json({ success: false, message: "Already submitted" });
+    if (!quiz)
+      return res.status(404).json({ success: false, message: "Quiz not found" });
+    if (quiz.isSubmitted)
+      return res
+        .status(400)
+        .json({ success: false, message: "Already submitted" });
 
     let score = 0;
+
     for (const resp of responses) {
+      // Ensure questionId and selectedOption exist
+      if (!resp?.questionId || !resp?.selectedOption) continue;
+
       const q = await Question.findById(resp.questionId);
-      if (q && q.correctAnswer === resp.selectedOption) score++;
+      if (q && q.correctAnswer === resp.selectedOption) {
+        score++;
+      }
     }
 
     quiz.responses = responses;
@@ -69,9 +79,12 @@ router.post("/submit", async (req, res) => {
     res.json({ success: true, score });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Error submitting quiz" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error submitting quiz", error });
   }
 });
+
 
 /* ------------------------- 4️⃣ Leaderboard ------------------------- */
 router.get("/leaderboard", async (req, res) => {
