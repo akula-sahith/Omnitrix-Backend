@@ -7,17 +7,33 @@ const router = express.Router();
 
 /* ------------------------- 1️⃣ Verify Team ------------------------- */
 router.post("/verifyTeam", async (req, res) => {
-  const { teamId } = req.body;
-  try {
-    const team = await Team.findOne({ teamId });
-    if (!team) return res.status(404).json({ success: false, message: "Invalid Team ID" });
+  const { teamId, email } = req.body;
 
-    res.json({ success: true, message: "Team verified successfully" });
+  try {
+    // Check both teamId and email
+    const team = await Team.findOne({ teamId, email });
+
+    if (!team) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Invalid Team ID or Email" 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Team verified successfully" 
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error verifying team" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error verifying team" 
+    });
   }
 });
+
 
 /* ------------------------- 2️⃣ Start Quiz ------------------------- */
 router.post("/start", async (req, res) => {
