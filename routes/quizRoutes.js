@@ -61,6 +61,7 @@ router.post("/start", async (req, res) => {
 });
 
 /* ------------------------- 3️⃣ Submit Quiz ------------------------- */
+/* ------------------------- 3️⃣ Submit Quiz ------------------------- */
 router.post("/submit", async (req, res) => {
   const { teamId, responses } = req.body;
 
@@ -76,31 +77,29 @@ router.post("/submit", async (req, res) => {
     let score = 0;
 
     for (const resp of responses) {
-      // Ensure questionId and selectedOption exist
       if (!resp?.questionId || !resp?.selectedOption) continue;
-
       const q = await Question.findById(resp.questionId);
-      if (q && q.correctAnswer === resp.selectedOption) {
-        score++;
-      }
+      if (q && q.correctAnswer === resp.selectedOption) score++;
     }
 
-    quiz.responses = responses;
-    quiz.score = score;
-    quiz.isSubmitted = true;
-    quiz.completedAt = new Date();
-
-    await quiz.save();
+    // ✅ Use atomic update instead of .save()
+    await Quiz.findOneAndUpdate(
+      { teamId },
+      {
+        responses,
+        score,
+        isSubmitted: true,
+        completedAt: new Date(),
+      },
+      { new: true }
+    );
 
     res.json({ success: true, score });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Error submitting quiz", error });
+    console.error("❌ Quiz submission error:", error);
+    res.status(500).json({ success: false, message: "Error submitting quiz" });
   }
 });
-
 
 /* ------------------------- 4️⃣ Leaderboard ------------------------- */
 router.get("/leaderboard", async (req, res) => {
