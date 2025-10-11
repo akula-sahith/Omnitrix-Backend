@@ -14,8 +14,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 // 🔹 Cloudinary config
 cloudinary.v2.config({
   cloud_name: "dsrsl0dul",
-  api_key: "746473455699629",
-  api_secret: "oGRlhfT0dfbLe-Lss58bzgSrO0s",
+  api_key: "117194973157861",
+  api_secret: "ovdfhEjwbvwwOVWxRfKWyqG8TZs",
 });
 
 /* ==========================================================
