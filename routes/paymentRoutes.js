@@ -6,17 +6,95 @@ import Payment from "../models/Payment.js";
 import FinalTeam from "../models/FinalTeams.js";
 import FinalCounter from "../models/FinalCounter.js";
 import Team from "../models/Team.js";
+import Coupon from "../models/Coupon.js"; // 👈 import coupon model
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() }); // store in memory for upload
+const upload = multer({ storage: multer.memoryStorage() });
 
 // 🔹 Cloudinary config
 cloudinary.v2.config({
-  cloud_name: "dsrsl0dul",   // replace with your Cloudinary cloud name
-  api_key: "746473455699629",         // replace with your API key
-  api_secret: "oGRlhfT0dfbLe-Lss58bzgSrO0s",   // replace with your API secret
+  cloud_name: "dsrsl0dul",
+  api_key: "746473455699629",
+  api_secret: "oGRlhfT0dfbLe-Lss58bzgSrO0s",
 });
 
+/* ==========================================================
+   ✅ 1️⃣ Verify if teamId is shortlisted
+   ========================================================== */
+router.post("/verify-shortlist", async (req, res) => {
+  try {
+    const { teamId } = req.body;
+    if (!teamId)
+      return res.status(400).json({ success: false, message: "Team ID is required" });
+
+    const shortlisted = await ShortlistedTeam.findOne({ teamId });
+    if (!shortlisted)
+      return res.status(404).json({ success: false, message: "Team not shortlisted" });
+
+    res.json({
+      success: true,
+      message: "Team is shortlisted",
+      teamDetails: shortlisted,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error checking shortlist" });
+  }
+});
+
+/* ==========================================================
+   ✅ 2️⃣ Verify Coupon for Team
+   ========================================================== */
+router.post("/verify-coupon", async (req, res) => {
+  try {
+    const { teamId, code } = req.body;
+
+    if (!teamId || !code) {
+      return res.status(400).json({
+        success: false,
+        message: "Team ID and Coupon Code are required",
+      });
+    }
+
+    // Check for matching coupon
+    const coupon = await Coupon.findOne({ teamId, code });
+
+    if (!coupon) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid Team ID or Coupon Code",
+      });
+    }
+
+    // Check if already used
+    if (coupon.isUsed) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon has already been used ❌",
+      });
+    }
+
+    // Mark as used
+    coupon.isUsed = true;
+    await coupon.save();
+
+    res.json({
+      success: true,
+      message: "Coupon verified successfully ✅",
+      couponDetails: coupon,
+    });
+  } catch (error) {
+    console.error("Error verifying coupon:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error verifying coupon",
+    });
+  }
+});
+
+/* ==========================================================
+   ✅ 3️⃣ Payment Submission
+   ========================================================== */
 router.post("/submit-payment", upload.single("paymentScreenshot"), async (req, res) => {
   try {
     const {
@@ -33,12 +111,12 @@ router.post("/submit-payment", upload.single("paymentScreenshot"), async (req, r
     const shortlisted = await ShortlistedTeam.findOne({ teamId });
     if (!shortlisted) return res.status(400).json({ error: "Team not shortlisted" });
 
-    // 2️⃣ Get college from Teams collection
+    // 2️⃣ Get college and year
     const teamData = await Team.findOne({ teamId });
     const college = teamData ? teamData.college : "";
     const yearOfStudy = teamData ? teamData.yearOfStudy : "";
 
-    // 3️⃣ Upload screenshot to Cloudinary
+    // 3️⃣ Upload screenshot
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const uploadResult = await new Promise((resolve, reject) => {
@@ -52,7 +130,7 @@ router.post("/submit-payment", upload.single("paymentScreenshot"), async (req, r
       stream.end(req.file.buffer);
     });
 
-    const paymentScreenshot = uploadResult.secure_url; // URL to store in DB
+    const paymentScreenshot = uploadResult.secure_url;
 
     // 4️⃣ Save payment info
     const payment = new Payment({
@@ -70,15 +148,12 @@ router.post("/submit-payment", upload.single("paymentScreenshot"), async (req, r
 
     // 5️⃣ Generate newTeamId
     let counter = await FinalCounter.findOne();
-    if (!counter) {
-      counter = new FinalCounter({ count: 0 });
-      await counter.save();
-    }
+    if (!counter) counter = new FinalCounter({ count: 0 });
     counter.count += 1;
     await counter.save();
     const newTeamId = `BEN${counter.count.toString().padStart(2, "0")}`;
 
-    // 6️⃣ Save to FinalTeams (without payment info)
+    // 6️⃣ Save final team
     const finalTeam = new FinalTeam({
       newTeamId,
       teamName,
