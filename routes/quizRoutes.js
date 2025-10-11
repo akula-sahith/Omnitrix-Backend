@@ -2,7 +2,7 @@ import express from "express";
 import Quiz from "../models/Quiz.js";
 import Team from "../models/Team.js";
 import Question from "../models/Question.js";
-
+import QuizTeam from "../models/QuizTeam.js";  // 👈 add this import
 const router = express.Router();
 
 /* ------------------------- 1️⃣ Verify Team ------------------------- */
@@ -111,5 +111,60 @@ router.get("/leaderboard", async (req, res) => {
     res.status(500).json({ success: false, message: "Error fetching leaderboard" });
   }
 });
+
+/* ------------------------- 5️⃣ Generate QuizTeams Data ------------------------- */
+router.post("/generateQuizTeams", async (req, res) => {
+  try {
+    // 1. Fetch all quizzes that are submitted
+    const quizzes = await Quiz.find({ isSubmitted: true }).lean();
+
+    if (!quizzes.length) {
+      return res.status(404).json({ success: false, message: "No quizzes found" });
+    }
+
+    // 2. Extract teamIds
+    const teamIds = quizzes.map(q => q.teamId);
+
+    // 3. Fetch corresponding team details
+    const teams = await Team.find({ teamId: { $in: teamIds } }).lean();
+
+    // 4. Combine quiz + team data
+    const combinedData = quizzes.map(quiz => {
+      const team = teams.find(t => t.teamId === quiz.teamId);
+      return {
+        teamId: quiz.teamId,
+        score: quiz.score,
+        completedAt: quiz.completedAt,
+        teamName: team?.teamName || "Unknown",
+        teamLeaderName: team?.teamLeaderName || "Unknown",
+        email: team?.email,
+        phoneNumber: team?.phoneNumber,
+        college: team?.college,
+        teamSize: team?.teamSize,
+        yearOfStudy: team?.yearOfStudy,
+        teammate1: team?.teammate1,
+        teammate2: team?.teammate2,
+      };
+    });
+
+    // 5. Sort by score (descending), then by completion time (ascending)
+    combinedData.sort((a, b) => {
+      if (b.score === a.score) {
+        return new Date(a.completedAt) - new Date(b.completedAt);
+      }
+      return b.score - a.score;
+    });
+
+    // 6. Clear old records & insert new ones
+    await QuizTeam.deleteMany({});
+    await QuizTeam.insertMany(combinedData);
+
+    res.json({ success: true, count: combinedData.length, data: combinedData });
+  } catch (error) {
+    console.error("❌ Error generating quiz teams:", error);
+    res.status(500).json({ success: false, message: "Error generating quiz team data" });
+  }
+});
+
 
 export default router;
