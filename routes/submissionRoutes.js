@@ -1,5 +1,5 @@
 import express from "express";
-import FinalTeam from "../models/FInalTeams.js";
+import FinalTeam from "../models/FinalTeams.js";
 import IdeaSubmission from "../models/IdeaSubmission.js";
 
 const router = express.Router();

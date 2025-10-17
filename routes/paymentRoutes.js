@@ -3,7 +3,7 @@ import multer from "multer";
 import cloudinary from "cloudinary";
 import ShortlistedTeam from "../models/ShortListedTeams.js";
 import Payment from "../models/Payment.js";
-import FinalTeam from "../models/FinalTeams.js";
+import FinalTeam from "../models/FInalTeams.js";
 import FinalCounter from "../models/FinalCounter.js";
 import Team from "../models/Team.js";
 import IdeaSubmission from "../models/IdeaSubmission.js";
