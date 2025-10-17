@@ -5,6 +5,7 @@ import cors from "cors";
 import quizRoutes from "./routes/quizRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import submissionROutes from "./routes/submissionRoutes.js"
 dotenv.config();
 const app = express();
 
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/team", teamRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/payment",paymentRoutes);
+app.use("/api/submit",submissionROutes);
 app.get("/api", (req, res) => {
   res.send({ message: "API is working 🚀" });
 });

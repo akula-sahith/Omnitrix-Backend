@@ -8,7 +8,10 @@ const finalTeamSchema = new mongoose.Schema({
   teammate1: { type: String, required: true },
   teammate2: { type: String },
   college: { type: String },
-  yearOfStudy: {type: String},
+  yearOfStudy: { type: String },
 }, { timestamps: true });
 
-export default mongoose.model("FinalTeam", finalTeamSchema);
+// ✅ Check if model already exists, otherwise create it
+const FinalTeam = mongoose.models.FinalTeam || mongoose.model("FinalTeam", finalTeamSchema);
+
+export default FinalTeam;
