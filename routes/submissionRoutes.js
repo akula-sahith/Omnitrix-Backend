@@ -1,6 +1,7 @@
 import express from "express";
 import FinalTeam from "../models/FinalTeams.js";
 import IdeaSubmission from "../models/IdeaSubmission.js";
+import MVPSubmission from "../models/MVPSubmission.js";
 import RoundTwoSubmission from "../models/RoundTwoSubmission.js";
 const router = express.Router();
 
@@ -94,5 +95,52 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+router.post("/mvp-features", async (req, res) => {
+  try {
+    const { teamId, teamName, domain, problemStatement, mvpFeatures } = req.body;
+
+    // ✅ Validate fields
+    if (!teamId || !teamName || !domain || !problemStatement || !mvpFeatures) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }
+
+    // ✅ Check if team already submitted
+    const existing = await MVPSubmission.findOne({ teamId });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Team with this ID has already submitted MVP features.",
+      });
+    }
+
+    // ✅ Create new submission
+    const submission = new MVPSubmission({
+      teamId,
+      teamName,
+      domain,
+      problemStatement,
+      mvpFeatures,
+    });
+
+    await submission.save();
+
+    res.status(201).json({
+      success: true,
+      message: "MVP features submitted successfully!",
+      data: submission,
+    });
+  } catch (err) {
+    console.error("Error submitting MVP features:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while submitting MVP features.",
+    });
+  }
+});
+
 
 export default router;
